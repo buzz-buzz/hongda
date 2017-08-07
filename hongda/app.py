@@ -1,5 +1,6 @@
 from bottle import route, run, get, post, request
-
+import urllib
+import json
 from api.subtitle import burn
 
 
@@ -15,10 +16,8 @@ def healthcheck():
 
 @post('/burn_subtitle')
 def burn_subtitle():
-    srtPath =request.forms.get('srtPath')
-    videoPath =request.forms.get('videoPath')
-    outputPath = request.forms.get('outputPath')
-    burn(srtPath=srtPath, videoPath=videoPath, outputPath=outputPath)
+    burn(srtPath=request.json['srtPath'],
+         videoPath=request.json['videoPath'], outputPath=request.json['outputPath'])
     return 'done'
 
 

@@ -8,6 +8,7 @@ def generator(txt): return TextClip(txt, font='Georgia-Regular',
 
 
 def burn(srtPath, videoPath, outputPath):
+    print(srtPath, videoPath, outputPath)
     sub = SubtitlesClip(srtPath, generator)
     myvideo = VideoFileClip(videoPath)
     final = CompositeVideoClip([myvideo, sub.set_pos(('center', 'bottom'))])
