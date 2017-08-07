@@ -23,4 +23,4 @@ def burn_subtitle():
     return 'done'
 
 
-run(host='localhost', port=10126, debug=True)
+run(host='0.0.0.0', port=10126, debug=True)
