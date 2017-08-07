@@ -6,11 +6,13 @@ from api.subtitle import burn
 
 @route('/hello')
 def hello():
+    print('hello')
     return "Hello World!"
 
 
 @route('/healthcheck')
 def healthcheck():
+    print('ok')
     return "OK"
 
 

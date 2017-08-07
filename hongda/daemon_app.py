@@ -7,11 +7,13 @@ from bottledaemon import daemon_run
 
 @route('/hello')
 def hello():
+    print('hello')
     return "Hello World!"
 
 
 @route('/healthcheck')
 def healthcheck():
+    print('ok')
     return "OK"
 
 
