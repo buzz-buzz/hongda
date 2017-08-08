@@ -1,3 +1,4 @@
 #!/bin/sh
 
-sudo python3 ../hongda/daemon_app.py stop
+CURRENT_PATH=`dirname $0`
+sudo python3 $CURRENT_PATH/../hongda/daemon_app.py stop
