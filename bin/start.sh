@@ -1,3 +1,3 @@
 #!/bin/sh
 
-python3 ../hongda/daemon_app.py start
+sudo python3 ../hongda/daemon_app.py start
