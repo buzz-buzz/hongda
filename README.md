@@ -14,6 +14,7 @@ Comment out all the policies
 
 Run on local
 ===========
+pip3 install -r requirements.txt -i https://pypi.douban.com/simple/
 python3 hongda/app.py
 
 Run on production
