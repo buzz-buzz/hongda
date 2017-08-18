@@ -26,7 +26,6 @@ def recognize(video_path):
 def generate_vtt(video_path, vtt_path):
     if vtt_path is None:
         vtt_path = os.path.splitext(video_path)[0] + '.vtt'
-    extract_audio(video_path)
     result = recognize(video_path)
     template = """WEBVTT FILE
 
