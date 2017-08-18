@@ -1,7 +1,6 @@
 from bottle import route, run, get, post, request
-import urllib
-import json
 from api.subtitle import burn
+from api.subtitle2 import generate_vtt
 
 
 @route('/hello')
@@ -20,6 +19,12 @@ def healthcheck():
 def burn_subtitle():
     burn(srtPath=request.json['srtPath'],
          videoPath=request.json['videoPath'], outputPath=request.json['outputPath'])
+    return 'done'
+
+
+@post('/recognize')
+def recognize():
+    generate_vtt(video_path=request.json['videoPath'], vtt_path=None)
     return 'done'
 
 

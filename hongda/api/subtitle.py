@@ -46,7 +46,7 @@ def get_dimension(file_path):
 
 
 def generator(txt): return TextClip(txt, font='Georgia-Regular',
-                                    fontsize=24, color='white')
+                                    fontsize=30, color='white')
 
 
 def convert_mov_to_mp4(videoPath):
