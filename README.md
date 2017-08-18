@@ -1,7 +1,16 @@
 ```
 apt install imagemagick 
 apt install python3-pip
+sudo apt-get install gcc dialog
+sudo apt-get install  swig libpulse-dev # For pip3 install pocketsphinx to success on ubuntu
 ```
+For Windows
+===========
+```
+pip3 install wheel
+pip3 install ./third_party/pocketsphinx-0.1.3-cp36-cp36m-win_amd64.whl
+```
+
 ```
 python3
 import imageio
