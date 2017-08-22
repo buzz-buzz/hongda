@@ -1,3 +1,4 @@
+import difflib
 from subprocess import call
 import os.path
 import speech_recognition as sr
@@ -36,3 +37,22 @@ def generate_vtt(video_path, vtt_path):
 """.format(dialog=result)
     with open(vtt_path, 'w') as vtt:
         vtt.write(template)
+
+    compare_vtt(video_path)
+
+    score_path = os.path.splitext(video_path)[0] + '.score'
+    with open(score_path, 'w') as score:
+        score.write(str(compare_vtt(video_path)))
+
+def compare_vtt(video_path):
+    parsed = os.path.splitext(video_path)
+    vtt_path = parsed[0] + '.vtt'
+
+    splitted = os.path.split(vtt_path)
+    expected_vtt_path = os.path.join(splitted[0], 'exp-' + splitted[1])
+    with open(vtt_path, 'r') as vtt:
+        actual = vtt.read()
+    with open(expected_vtt_path, 'r') as exp_vtt:
+        expected = exp_vtt.read()
+    seq = difflib.SequenceMatcher(None, actual, expected)
+    return seq.ratio()
