@@ -10,7 +10,9 @@ http://www.lfd.uci.edu/~gohlke/pythonlibs/#scikit-image
 
 ```
 pip3 install wheel
+pip3 install ./third_party/Pillow-4.2.1-cp36-cp36m-win_amd64.whl
 pip3 install ./third_party/pocketsphinx-0.1.3-cp36-cp36m-win_amd64.whl
+pip3 install ./third_party/numpy-1.13.1-cp36-cp36m-win_amd64.whl
 pip3 install ./third_party/scipy-0.19.1-cp36-cp36m-win_amd64.whl
 pip3 install ./third_party/scikit_image-0.13.0-cp36-cp36m-win_amd64.whl
 ```
