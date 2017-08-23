@@ -2,7 +2,10 @@
 apt install imagemagick 
 apt install python3-pip
 sudo apt-get install gcc dialog
-sudo apt-get install  swig libpulse-dev # For pip3 install pocketsphinx to success on ubuntu
+sudo apt-get install swig libpulse-dev # For pip3 install pocketsphinx to success on ubuntu
+sudo apt-get install portaudio19-dev
+sudo apt-get install liblapack-dev 
+sudo apt-get install gfortran
 ```
 For Windows
 ===========
@@ -49,3 +52,21 @@ sudo apt install nfs-common
 mkdir -p /mnt/br-nas
 sudo mount -t nfs4 0b42549a88-rmp77.cn-hangzhou.nas.aliyuncs.com:/ /mnt/br-nas
 ```
+
+install ffmpeg on ubuntu
+===================
+http://johnvansickle.com/ffmpeg/
+
+Download and extract the latest archive:
+
+```
+wget https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-64bit-static.tar.xz
+tar xvf ffmpeg-git-*.tar.xz
+```
+
+Place the ffmpeg and other binaries whereever you need to run that command, for example into /usr/local/bin in order to have it to your $PATH:
+```
+cd ./ffmpeg-git-*
+sudo cp ff* qt-faststart /usr/local/bin/
+```
+Run ffmpeg using: ffmpeg
