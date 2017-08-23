@@ -27,5 +27,5 @@ def recognize():
     generate_vtt(video_path=request.json['videoPath'], vtt_path=None)
     return 'done'
 
-
-run(host='0.0.0.0', port=10126, debug=True)
+if __name__ == '__main__':
+    run(host='0.0.0.0', port=10126, debug=True)
