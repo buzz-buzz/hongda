@@ -6,7 +6,8 @@ import speech_recognition as sr
 
 def extract_audio(video_path):
     audio = os.path.splitext(video_path)[0] + '.wav'
-    call(['ffmpeg', '-i', video_path, '-vn', '-acodec', 'pcm_s16le', '-ar', '44100', '-ac', '2', audio])
+    if not os.path.isfile(audio):
+        call(['ffmpeg', '-i', video_path, '-vn', '-acodec', 'pcm_s16le', '-ar', '44100', '-ac', '2', audio])
     return audio
 
 
@@ -56,3 +57,6 @@ def compare_vtt(video_path):
         expected = exp_vtt.read()
     seq = difflib.SequenceMatcher(None, actual, expected)
     return seq.ratio()
+
+if __name__ == 'main':
+    print('subtitle2.py')
