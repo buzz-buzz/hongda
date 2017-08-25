@@ -2,12 +2,11 @@ from scipy.ndimage.filters import gaussian_filter
 from moviepy.editor import VideoFileClip
 from PIL import Image, ImageEnhance
 from numpy import array
-from moviepy import *
-import moviepy.video.fx.all as vfx
 import cv2
 import numpy as np
 import os.path
 from api.video import compress_dimension_with_rotation_handled, convert_mp4_to_mov
+import os
 
 
 def blur(image):
@@ -61,6 +60,26 @@ def cartoonize(img, ds_factor=2, sketch_mode=False):
     dst = cv2.bitwise_and(img_output, img_output, mask=mask)
     return dst
 
+def paster_effect(img):
+    return paster_glasses(paster_mouthache(img))
+
+face_cascade_file = os.path.join(os.getcwd(), 'hongda/cascade_files/haarcascade_frontalface_alt.xml')
+face_cascade = cv2.CascadeClassifier(face_cascade_file)
+eye_cascade_file = os.path.join(os.getcwd(), 'hongda/cascade_files/haarcascade_eye.xml')
+eye_cascade = cv2.CascadeClassifier(eye_cascade_file)
+moustache_file = os.path.join(os.getcwd(), 'hongda/pasters/moustache.png')
+sunglasses_file = os.path.join(os.getcwd(), 'hongda/pasters/sunglasses.png')
+def paster_glasses(img):
+    if face_cascade.empty():
+        raise IOError('Unable to load the face cascade classifier xml file: ' + face_cascade_file)
+    if eye_cascade.empty():
+        raise IOError('Unable to load the eye cascade classifier xml file:' + eye_cascade_file)
+
+    print('================ successfully loaded cascade files! =======================================')
+    return img
+
+def paster_mouthache(img):
+    return img
 
 def beautify(image):
     # return cartoonize(bright(contrast(sharp(image))))
@@ -76,6 +95,15 @@ def recipe_cartoonize(videoFilePath):
     print("cartoonized video: {0}".format(cartoonized_video_file))
     clip_processed.write_videofile(cartoonized_video_file)
     convert_mp4_to_mov(cartoonized_video_file)
+
+def recipe_paster(video_file_path):
+    parsed = os.path.split(video_file_path)
+    pastered = os.path.join(parsed[0], 'p-' + os.path.splitext(parsed[1])[0] + '.mp4')
+    d = compress_dimension_with_rotation_handled(video_file_path)
+    clip = VideoFileClip(video_file_path, target_resolution=d)
+    clip_processed = clip.fl_image(paster_effect)
+    clip_processed.write_videofile(pastered)
+    convert_mp4_to_mov(pastered)
 
 # clip = VideoFileClip(r"C:\Users\Jeff\AppData\Local\Temp\8318652456269066__90582751-0C2D-41BD-957F-4E111C01609A.mp4",
 #                      target_resolution=(640, 480))
