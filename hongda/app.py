@@ -1,5 +1,5 @@
 from bottle import route, run, get, post, request
-from api.subtitle import burn
+from api.video import burn
 from api.subtitle2 import generate_vtt
 from api.beautify import recipe_cartoonize
 

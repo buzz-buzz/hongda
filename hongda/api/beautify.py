@@ -7,6 +7,7 @@ import moviepy.video.fx.all as vfx
 import cv2
 import numpy as np
 import os.path
+from api.video import compress_dimension_with_rotation_handled, convert_mp4_to_mov
 
 
 def blur(image):
@@ -67,12 +68,14 @@ def beautify(image):
 
 
 def recipe_cartoonize(videoFilePath):
-    clip = VideoFileClip(videoFilePath)
-    clip_processed = clip.fl_image(beautify)
     parsed = os.path.split(videoFilePath)
     cartoonized_video_file = os.path.join(parsed[0], 'c-' + os.path.splitext(parsed[1])[0] + '.mp4')
+    d = compress_dimension_with_rotation_handled(videoFilePath)
+    clip = VideoFileClip(videoFilePath, target_resolution=d)
+    clip_processed = clip.fl_image(beautify)
     print("cartoonized video: {0}".format(cartoonized_video_file))
     clip_processed.write_videofile(cartoonized_video_file)
+    convert_mp4_to_mov(cartoonized_video_file)
 
 # clip = VideoFileClip(r"C:\Users\Jeff\AppData\Local\Temp\8318652456269066__90582751-0C2D-41BD-957F-4E111C01609A.mp4",
 #                      target_resolution=(640, 480))

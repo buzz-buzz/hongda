@@ -93,7 +93,6 @@ def compress_dimension(path):
 def compress_dimension_with_rotation_handled(path):
     h, w = compress_dimension(path)
     rotation = get_rotation(path)
-    _, ext = os.path.splitext(path)
     if rotation == 90 or rotation == 270:  # If video is in portrait
         print("video is portrait")
         return w, h

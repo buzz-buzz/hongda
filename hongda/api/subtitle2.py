@@ -29,10 +29,9 @@ def generate_vtt(video_path, vtt_path):
     if vtt_path is None:
         vtt_path = os.path.splitext(video_path)[0] + '.vtt'
     result = recognize(video_path)
-    template = """WEBVTT FILE
+    template = """WEBVTT
 
-1
-00:00:00.000 --> 00:00:10.375
+00:00:00.000 --> 00:00:30.375
 {dialog}
 
 """.format(dialog=result)
