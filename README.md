@@ -6,6 +6,7 @@ sudo apt-get install swig libpulse-dev # For pip3 install pocketsphinx to succes
 sudo apt-get install portaudio19-dev
 sudo apt-get install liblapack-dev 
 sudo apt-get install gfortran
+pip3 install opencv-python -i https://pypi.douban.com/simple/
 ```
 For Windows
 ===========
