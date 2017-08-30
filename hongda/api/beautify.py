@@ -65,8 +65,12 @@ def cartoonize(img, ds_factor=2, sketch_mode=False):
 
 
 def paster_effect(img):
-    # return paster_glasses(paster_mouthache(contrast(bright(img))))
-    return paster_mouthache(paster_glasses(bright(img)))
+    # return paster_nose(bright(img))
+    # return paster_mouthache(paster_glasses(bright(img)))
+    return paster_glasses(img)
+
+def paster_effect_nose(img):
+    return paster_nose(bright(img))
 
 
 face_cascade_file = os.path.join(
@@ -150,22 +154,67 @@ def paster_mouthache(img):
     h_mask, w_mask = moustache_mask.shape[:2]
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    mouth_rects = moustache.detectMultiScale(gray, 1.3, 5)
+    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
 
-    if len(mouth_rects) > 0:
-        (x, y, w, h) = mouth_rects[0]
-        width = int(w * 1.3)
-        height = int((h_mask / w_mask) * width)
-        start_y = y - (height - 10)
-        start_x = int(x - (width - w) / 2)
-        img_roi = img[start_y:start_y + height, start_x:start_x + width]
-        moustache_mask_small = cv2.resize(moustache_mask, (width, height), interpolation=cv2.INTER_AREA)
-        gray_mask_small = cv2.cvtColor(moustache_mask_small, cv2.COLOR_BGR2GRAY)
-        ret, mask = cv2.threshold(gray_mask_small, 200, 255, cv2.THRESH_BINARY_INV)
-        mask_inv = cv2.bitwise_not(mask)
-        masked_mouth = cv2.bitwise_and(moustache_mask_small, moustache_mask_small, mask=mask)
-        masked_img = cv2.bitwise_and(img_roi, img_roi, mask=mask_inv)
-        img[start_y:start_y + height, start_x:start_x + width] = cv2.add(masked_mouth, masked_img)
+    for (x_face, y_face, w_face, h_face) in faces:
+        cv2.rectangle(img, (x_face, y_face), (x_face + w_face, y_face + h_face), (255, 255, 0), 3)
+        roi_gray = gray[y_face:y_face + h_face, x_face:x_face + w_face]
+        mouth_rects = moustache.detectMultiScale(roi_gray, 1.3, 5)
+        roi_img = img[y_face:y_face + h_face, x_face:x_face + w_face]
+        for (x, y, w, h) in mouth_rects:
+            cv2.rectangle(roi_img, (x, y), (x + w, y + h), (0, 255, 0), 3)
+
+        for (x, y, w, h) in mouth_rects:
+            width = int(w * 1.3)
+            height = int((h_mask / w_mask) * width)
+            start_y = y_face + y - (height - 10)
+            start_x = x_face + int(x - (width - w) / 2)
+            img_roi = img[y_face + start_y:y_face + start_y + height, x_face + start_x:x_face + start_x + width]
+            moustache_mask_small = cv2.resize(moustache_mask, (width, height), interpolation=cv2.INTER_AREA)
+            gray_mask_small = cv2.cvtColor(moustache_mask_small, cv2.COLOR_BGR2GRAY)
+            ret, mask = cv2.threshold(gray_mask_small, 200, 255, cv2.THRESH_BINARY_INV)
+            mask_inv = cv2.bitwise_not(mask)
+            masked_mouth = cv2.bitwise_and(moustache_mask_small, moustache_mask_small, mask=mask)
+            masked_img = cv2.bitwise_and(img_roi, img_roi, mask=mask_inv)
+            img[y_face + start_y:y_face + start_y + height, x_face + start_x:x_face + start_x + width] = cv2.add(
+                masked_mouth, masked_img)
+
+    return img
+
+
+def paster_nose(img):
+    nose_cascade_file = os.path.join(os.getcwd(), 'hongda/cascade_files/haarcascade_mcs_nose.xml')
+    nose_cascade = cv2.CascadeClassifier(nose_cascade_file)
+    if nose_cascade.empty():
+        raise IOError('Unable to load the nose classifier xml file: ' + nose_cascade_file)
+
+    nose_img_file = os.path.join(os.getcwd(), 'hongda/pasters/nose.jpg')
+    nose_img = cv2.imread(nose_img_file)
+    h_nose_img, w_nose_img = nose_img.shape[:2]
+
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+
+    for (x, y, w, h) in faces:
+        roi_gray = gray[y:y + h, x:x + w]
+        roi_img = img[y:y + h, x:x + w]
+
+        nose_rects = nose_cascade.detectMultiScale(roi_gray, 1.3, 5)
+        for (x_nose, y_nose, w_nose, h_nose) in nose_rects:
+            width = int(w * 1.25)
+            height = int((h_nose_img / w_nose_img) * width)
+            start_y = int(y_nose - (height - h_nose) / 2)
+            start_x = int(x_nose - (width - w_nose) / 2)
+            nose_area = img[y + start_y:y + start_y + height, x + start_x:x + start_x + width]
+            nose_img_small = cv2.resize(nose_img, (width, height), interpolation=cv2.INTER_AREA)
+            gray_mask_small = cv2.cvtColor(nose_img_small, cv2.COLOR_BGR2GRAY)
+            ret, mask = cv2.threshold(gray_mask_small, 80, 255, cv2.THRESH_BINARY_INV)
+            mask_inv = cv2.bitwise_not(mask)
+            masked_nose = cv2.bitwise_and(nose_img_small, nose_img_small, mask=mask)
+            masked_img = cv2.bitwise_and(nose_area, nose_area, mask=mask_inv)
+            img[y + start_y:y + start_y + height, x + start_x:x + start_x + width] = cv2.add(masked_nose, masked_img)
+            # img[y + start_y:y + start_y + height, x + start_x:x + start_x + width] = masked_nose
 
     return img
 
@@ -196,6 +245,18 @@ def recipe_paster(video_file_path):
     d = compress_dimension_with_rotation_handled(video_file_path)
     clip = VideoFileClip(video_file_path, target_resolution=d)
     clip_processed = clip.fl_image(paster_effect)
+    clip_processed.write_videofile(pastered)
+    convert_mp4_to_mov(pastered)
+
+def recipe_paster_nose(video_file_path):
+    if not video_file_path:
+        video_file_path = r'C:\Users\Jeff\AppData\Local\Temp\6082852567445745__AA8315D1-82EB-4206-B98F-5FE24AE7191F.MOV'
+    parsed = os.path.split(video_file_path)
+    pastered = os.path.join(
+        parsed[0], 'n-' + os.path.splitext(parsed[1])[0] + '.mp4')
+    d = compress_dimension_with_rotation_handled(video_file_path)
+    clip = VideoFileClip(video_file_path, target_resolution=d)
+    clip_processed = clip.fl_image(paster_effect_nose)
     clip_processed.write_videofile(pastered)
     convert_mp4_to_mov(pastered)
 

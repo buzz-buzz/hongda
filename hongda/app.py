@@ -1,7 +1,7 @@
 from bottle import route, run, get, post, request
 from api.video import burn
 from api.subtitle2 import generate_vtt
-from api.beautify import recipe_cartoonize, recipe_paster
+from api.beautify import recipe_cartoonize, recipe_paster, recipe_paster_nose
 
 
 @route('/hello')
@@ -27,8 +27,10 @@ def burn_subtitle():
 def recognize():
     video_path = request.json['videoPath']
     generate_vtt(video_path=video_path, vtt_path=None)
+    recipe_paster_nose(video_path)
     recipe_cartoonize(video_path)
     recipe_paster(video_path)
+
     return 'done'
 
 if __name__ == '__main__':
