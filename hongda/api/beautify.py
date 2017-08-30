@@ -66,7 +66,7 @@ def cartoonize(img, ds_factor=2, sketch_mode=False):
 
 def paster_effect(img):
     # return paster_glasses(paster_mouthache(contrast(bright(img))))
-    return paster_glasses(bright(img))
+    return paster_mouthache(paster_glasses(bright(img)))
 
 
 face_cascade_file = os.path.join(
@@ -111,7 +111,7 @@ def paster_glasses(img):
         x1 = edges[0][0] if edges[0][0] < edges[1][0] else edges[1][0]
         x1 -= 15
         x2 = edges[1][0] + \
-            edges[1][2] if edges[0][0] < edges[1][0] else edges[0][0] + edges[0][2]
+             edges[1][2] if edges[0][0] < edges[1][0] else edges[0][0] + edges[0][2]
         x2 += 15
         y1 = edges[0][1]
         sunglasses_width = x2 - x1
@@ -141,6 +141,32 @@ def paster_glasses(img):
 
 
 def paster_mouthache(img):
+    cascade_file = os.path.join(os.getcwd(), 'hongda/cascade_files/haarcascade_mcs_mouth.xml')
+    moustache = cv2.CascadeClassifier(cascade_file)
+    if moustache.empty():
+        raise IOError('Unable to load the moustache classifier xml file: ' + cascade_file)
+
+    moustache_mask = cv2.imread(moustache_file)
+    h_mask, w_mask = moustache_mask.shape[:2]
+
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    mouth_rects = moustache.detectMultiScale(gray, 1.3, 5)
+
+    if len(mouth_rects) > 0:
+        (x, y, w, h) = mouth_rects[0]
+        width = int(w * 1.3)
+        height = int((h_mask / w_mask) * width)
+        start_y = y - (height - 10)
+        start_x = int(x - (width - w) / 2)
+        img_roi = img[start_y:start_y + height, start_x:start_x + width]
+        moustache_mask_small = cv2.resize(moustache_mask, (width, height), interpolation=cv2.INTER_AREA)
+        gray_mask_small = cv2.cvtColor(moustache_mask_small, cv2.COLOR_BGR2GRAY)
+        ret, mask = cv2.threshold(gray_mask_small, 200, 255, cv2.THRESH_BINARY_INV)
+        mask_inv = cv2.bitwise_not(mask)
+        masked_mouth = cv2.bitwise_and(moustache_mask_small, moustache_mask_small, mask=mask)
+        masked_img = cv2.bitwise_and(img_roi, img_roi, mask=mask_inv)
+        img[start_y:start_y + height, start_x:start_x + width] = cv2.add(masked_mouth, masked_img)
+
     return img
 
 
@@ -172,7 +198,6 @@ def recipe_paster(video_file_path):
     clip_processed = clip.fl_image(paster_effect)
     clip_processed.write_videofile(pastered)
     convert_mp4_to_mov(pastered)
-
 
 # clip = VideoFileClip(r"C:\Users\Jeff\AppData\Local\Temp\8318652456269066__90582751-0C2D-41BD-957F-4E111C01609A.mp4",
 #                      target_resolution=(640, 480))
