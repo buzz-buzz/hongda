@@ -26,8 +26,8 @@ def burn_subtitle():
 @post('/recognize')
 def recognize():
     video_path = request.json['videoPath']
-    generate_vtt(video_path=video_path, vtt_path=None)
     recipe_paster_nose(video_path)
+    generate_vtt(video_path=video_path, vtt_path=None)
     recipe_cartoonize(video_path)
     recipe_paster(video_path)
 
