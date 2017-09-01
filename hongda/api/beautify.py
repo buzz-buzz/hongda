@@ -71,7 +71,7 @@ def paster_effect(img):
 
 
 def paster_effect_nose(img):
-    return paster_nose(bright(img))
+    return paster_nose((img))
 
 
 face_cascade_file = os.path.join(
@@ -87,6 +87,7 @@ nose_cascade_file = os.path.join(
     os.getcwd(), 'hongda/cascade_files/haarcascade_mcs_nose.xml')
 nose_cascade = cv2.CascadeClassifier(nose_cascade_file)
 nose_img_file = os.path.join(os.getcwd(), 'hongda/pasters/nose.jpg')
+
 
 def paster_glasses(img):
     if face_cascade.empty():
@@ -120,7 +121,7 @@ def paster_glasses(img):
         x1 = edges[0][0] if edges[0][0] < edges[1][0] else edges[1][0]
         x1 -= 15
         x2 = edges[1][0] + \
-            edges[1][2] if edges[0][0] < edges[1][0] else edges[0][0] + edges[0][2]
+             edges[1][2] if edges[0][0] < edges[1][0] else edges[0][0] + edges[0][2]
         x2 += 15
         y1 = edges[0][1]
         sunglasses_width = x2 - x1
@@ -178,7 +179,7 @@ def paster_mouthache(img):
             start_y = y_face + y - (height - 10)
             start_x = x_face + int(x - (width - w) / 2)
             img_roi = img[y_face + start_y:y_face + start_y +
-                          height, x_face + start_x:x_face + start_x + width]
+                                           height, x_face + start_x:x_face + start_x + width]
             moustache_mask_small = cv2.resize(
                 moustache_mask, (width, height), interpolation=cv2.INTER_AREA)
             gray_mask_small = cv2.cvtColor(
@@ -195,13 +196,49 @@ def paster_mouthache(img):
     return img
 
 
+def sub_image(img, x, y, w, h):
+    clip = sub_area(img, x, y, w, h)
+    return img[clip[1]:clip[1] + clip[3], clip[0]:clip[0] + clip[2]]
+
+
+def sub_area(img, x, y, w, h):
+    print('image shape = ', img.shape)
+    print(x, y, w, h)
+    if x < 0:
+        crop_x = -x
+        x = 0
+        w -= crop_x
+    else:
+        crop_x = 0
+
+    if y < 0:
+        print('y is less than zero!')
+        crop_y = -y
+        y = 0
+        h -= crop_y
+    else:
+        crop_y = 0
+
+    if w > img.shape[1] - x:
+        w = img.shape[1] - x
+
+    if h > img.shape[0] - y:
+        print('h is overflow!')
+        h = img.shape[0] - y
+
+    crop_end_x = crop_x + w
+    crop_end_y = crop_y + h
+    print(x, y, w, h)
+    return (x, y, w, h, crop_x, crop_y, crop_end_x, crop_end_y)
+
+
 def paster_nose(img):
     if nose_cascade.empty():
         raise IOError(
             'Unable to load the nose classifier xml file: ' + nose_cascade_file)
 
-    nose_img = cv2.imread(nose_img_file)
-    h_nose_img, w_nose_img = nose_img.shape[:2]
+    nose_paster = cv2.imread(nose_img_file)
+    nose_paster_natural_height, node_paster_natural_width = nose_paster.shape[:2]
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -213,24 +250,48 @@ def paster_nose(img):
 
         nose_rects = nose_cascade.detectMultiScale(roi_gray, 1.3, 5)
         for (x_nose, y_nose, w_nose, h_nose) in nose_rects:
-            width = int(w * 1.25)
-            height = int((h_nose_img / w_nose_img) * width)
-            start_y = int(y_nose - (height - h_nose) / 2)
-            start_x = int(x_nose - (width - w_nose) / 2)
-            nose_area = img[y + start_y:y + start_y +
-                            height, x + start_x:x + start_x + width]
-            nose_img_small = cv2.resize(
-                nose_img, (width, height), interpolation=cv2.INTER_AREA)
-            gray_mask_small = cv2.cvtColor(nose_img_small, cv2.COLOR_BGR2GRAY)
-            ret, mask = cv2.threshold(
-                gray_mask_small, 80, 255, cv2.THRESH_BINARY_INV)
-            mask_inv = cv2.bitwise_not(mask)
-            masked_nose = cv2.bitwise_and(
-                nose_img_small, nose_img_small, mask=mask)
-            masked_img = cv2.bitwise_and(nose_area, nose_area, mask=mask_inv)
-            img[y + start_y:y + start_y + height, x + start_x:x +
-                start_x + width] = cv2.add(masked_nose, masked_img)
-            # img[y + start_y:y + start_y + height, x + start_x:x + start_x + width] = masked_nose
+            paster_width = int(w * 1.25)
+            paster_height = int((nose_paster_natural_height / node_paster_natural_width) * paster_width)
+
+            paster_start_y_from_face = int(y_nose - (paster_height - h_nose) / 2)
+            paster_start_x_from_face = int(x_nose - (paster_width - w_nose) / 2)
+            start_y_from_img = y + paster_start_y_from_face
+            start_x_from_img = x + paster_start_x_from_face
+
+            clip = sub_area(img, start_x_from_img, start_y_from_img, paster_width, paster_height)
+
+            nose_area = sub_image(img, start_x_from_img, start_y_from_img, paster_width, paster_height)
+
+            small_nose_paster = cv2.resize(
+                nose_paster, (paster_width, paster_height), interpolation=cv2.INTER_AREA)
+            cropped_nose_paster = small_nose_paster[clip[5]:clip[7], clip[4]:clip[6]]
+
+            gray_cropped_nose_paster = cv2.cvtColor(cropped_nose_paster, cv2.COLOR_BGR2GRAY)
+
+            _, nose_paster_mask = cv2.threshold(
+                gray_cropped_nose_paster, 200, 255, cv2.THRESH_BINARY_INV)
+            inv_nose_paster_mask = cv2.bitwise_not(nose_paster_mask)
+
+            masked_nose_paster = cv2.bitwise_and(
+                cropped_nose_paster, cropped_nose_paster, mask=nose_paster_mask)
+
+            print('nose area shape = ', nose_area.shape)
+            print('mask shape = ', inv_nose_paster_mask.shape)
+            print('paster shape = ', small_nose_paster.shape)
+
+            # cv2.imshow('nose_area', nose_area)
+            # cv2.imshow('mask', inv_nose_paster_mask)
+            # cv2.imshow('paster', small_nose_paster)
+
+            try:
+                masked_nose_area = cv2.bitwise_and(nose_area, nose_area, mask=inv_nose_paster_mask)
+
+                merged_nose_area = cv2.add(masked_nose_paster, masked_nose_area)
+
+                img[clip[1]:clip[1] + clip[3],
+                clip[0]:clip[0] + clip[2]] = merged_nose_area
+            except:
+                return nose_area
 
     return img
 
