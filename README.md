@@ -71,3 +71,7 @@ cd ./ffmpeg-git-*
 sudo cp ff* qt-faststart /usr/local/bin/
 ```
 Run ffmpeg using: ffmpeg
+
+Face detection
+=============
+How does it work:  https://vimeo.com/12774628

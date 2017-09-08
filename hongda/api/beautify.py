@@ -7,6 +7,7 @@ import numpy as np
 import os.path
 from api.video import compress_dimension_with_rotation_handled, convert_mp4_to_mov
 import os
+import dlib
 
 
 def blur(image):
@@ -74,6 +75,10 @@ def paster_effect_nose(img):
     return paster_nose((img))
 
 
+def paster_effect_nose_2(img):
+    return paster_nose_2((img))
+
+
 face_cascade_file = os.path.join(
     os.getcwd(), 'hongda/cascade_files/haarcascade_frontalface_alt.xml')
 face_cascade = cv2.CascadeClassifier(face_cascade_file)
@@ -87,7 +92,11 @@ nose_cascade_file = os.path.join(
     os.getcwd(), 'hongda/cascade_files/haarcascade_mcs_nose.xml')
 nose_cascade = cv2.CascadeClassifier(nose_cascade_file)
 nose_img_file = os.path.join(os.getcwd(), 'hongda/pasters/nose.jpg')
+nose_paster = cv2.imread(nose_img_file)
 
+face_detector = dlib.get_frontal_face_detector()
+landmark_file_path = os.path.join(os.getcwd(), 'hongda/data/shape_predictor_68_face_landmarks.dat')
+predictor = dlib.shape_predictor(landmark_file_path)
 
 def paster_glasses(img):
     if face_cascade.empty():
@@ -232,6 +241,32 @@ def sub_area(img, x, y, w, h):
     return (x, y, w, h, crop_x, crop_y, crop_end_x, crop_end_y)
 
 
+def paster_nose_to(img, paster, center_x, center_y, paste_to_width, paste_to_height):
+    if paste_to_height == None:
+        paste_to_height = int((paster.shape[0] / paster.shape[1]) * paste_to_width)
+    paster = cv2.resize(paster, (paste_to_width, paste_to_height), interpolation=cv2.INTER_AREA)
+    start_x = int(center_x - paste_to_width / 2)
+    start_y = int(center_y - paste_to_height / 2)
+
+    clip = sub_area(img, start_x, start_y, paste_to_width, paste_to_height)
+
+    _, paster_mask = cv2.threshold(
+        cv2.cvtColor(paster, cv2.COLOR_BGR2GRAY), 200, 255, cv2.THRESH_BINARY_INV)
+    paster = paster[clip[5]:clip[7], clip[4]:clip[6]]
+    paster_mask = paster_mask[clip[5]:clip[7], clip[4]:clip[6]]
+    inv_paster_mask = cv2.bitwise_not(paster_mask)
+    masked_paster = cv2.bitwise_and(paster, paster, mask=paster_mask)
+
+    nose_area = sub_image(img, start_x, start_y, paste_to_width, paste_to_height)
+    masked_nose_area = cv2.bitwise_and(nose_area, nose_area, mask=inv_paster_mask)
+    merged = cv2.add(masked_nose_area, masked_paster)
+
+    img[clip[1]:clip[1] + clip[3],
+    clip[0]:clip[0] + clip[2]] = merged
+
+    return img
+
+
 def paster_nose(img):
     if nose_cascade.empty():
         raise IOError(
@@ -245,6 +280,7 @@ def paster_nose(img):
     faces = face_cascade.detectMultiScale(gray, 1.3, 5)
 
     for (x, y, w, h) in faces:
+        cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 3)
         roi_gray = gray[y:y + h, x:x + w]
         roi_img = img[y:y + h, x:x + w]
 
@@ -296,6 +332,42 @@ def paster_nose(img):
     return img
 
 
+def shape_to_np(shape, dtype="int"):
+    coords = np.zeros((68, 2), dtype=dtype)
+
+    for i in range(0, 68):
+        coords[i] = (shape.part(i).x, shape.part(i).y)
+
+    return coords
+
+
+def rect_to_bounding_box(rect):
+    x = rect.left()
+    y = rect.top()
+    w = rect.right() - x
+    h = rect.bottom() - y
+
+    return (x, y, w, h)
+
+
+def paster_nose_2(img):
+    scale = 200 / min(img.shape[1], img.shape[0])
+    print('scale= ', scale)
+    gray = cv2.resize(img, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+    gray = cv2.cvtColor(gray, cv2.COLOR_BGR2GRAY)
+
+    faces = face_detector(gray, 1)
+
+    for i, face_rect in enumerate(faces):
+        shape = predictor(gray, face_rect)
+        shape = shape_to_np(shape)
+        (x, y, w, h) = rect_to_bounding_box(face_rect)
+        cv2.circle(img, (int(shape[30][0] / scale), int(shape[30][1] / scale)), 2, (255, 0, 0), -1)
+        paster_nose_to(img, nose_paster, int(shape[30][0] / scale), int(shape[30][1] / scale), int((w / scale) * 1.25), None)
+
+    return img
+
+
 def beautify(image):
     # return cartoonize(bright(contrast(sharp(image))))
     return cartoonize(bright(image))
@@ -335,6 +407,19 @@ def recipe_paster_nose(video_file_path):
     d = compress_dimension_with_rotation_handled(video_file_path)
     clip = VideoFileClip(video_file_path, target_resolution=d)
     clip_processed = clip.fl_image(paster_effect_nose)
+    clip_processed.write_videofile(pastered)
+    convert_mp4_to_mov(pastered)
+
+
+def recipe_paster_nose_2(video_file_path):
+    if not video_file_path:
+        video_file_path = r'C:\Users\Jeff\AppData\Local\Temp\6082852567445745__AA8315D1-82EB-4206-B98F-5FE24AE7191F.MOV'
+    parsed = os.path.split(video_file_path)
+    pastered = os.path.join(
+        parsed[0], 'n-' + os.path.splitext(parsed[1])[0] + '.mp4')
+    d = compress_dimension_with_rotation_handled(video_file_path)
+    clip = VideoFileClip(video_file_path, target_resolution=d)
+    clip_processed = clip.fl_image(paster_effect_nose_2)
     clip_processed.write_videofile(pastered)
     convert_mp4_to_mov(pastered)
 

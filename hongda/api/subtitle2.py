@@ -56,6 +56,3 @@ def compare_vtt(video_path):
         expected = exp_vtt.read()
     seq = difflib.SequenceMatcher(None, actual, expected)
     return seq.ratio()
-
-if __name__ == 'main':
-    print('subtitle2.py')
