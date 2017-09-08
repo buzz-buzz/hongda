@@ -7,3 +7,4 @@ pocketsphinx
 scipy
 scikit-image
 opencv-python
+dlib
