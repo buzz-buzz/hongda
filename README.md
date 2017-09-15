@@ -1,6 +1,8 @@
 ```
 apt install imagemagick 
 apt install python3-pip
+sudo apt install cmake
+sudo apt install libboost-all-dev
 sudo apt-get install gcc dialog
 sudo apt-get install swig libpulse-dev # For pip3 install pocketsphinx to success on ubuntu
 sudo apt-get install portaudio19-dev

@@ -2,6 +2,7 @@ import difflib
 from subprocess import call
 import os.path
 import speech_recognition as sr
+from api.text_matcher import *
 
 
 def extract_audio(video_path):
@@ -50,9 +51,5 @@ def compare_vtt(video_path):
 
     splitted = os.path.split(vtt_path)
     expected_vtt_path = os.path.join(splitted[0], 'exp-' + splitted[1])
-    with open(vtt_path, 'r') as vtt:
-        actual = vtt.read()
-    with open(expected_vtt_path, 'r') as exp_vtt:
-        expected = exp_vtt.read()
-    seq = difflib.SequenceMatcher(None, actual, expected)
-    return seq.ratio()
+
+    return vtt_content_match(expected_vtt_path, vtt_path)
