@@ -77,3 +77,19 @@ Run ffmpeg using: ffmpeg
 Face detection
 =============
 How does it work:  https://vimeo.com/12774628
+
+Run unit test
+============
+```
+python3 hongda/tests.py
+```
+
+Run functional test
+=============
+```
+python3 manage.py test functional_tests.py
+```
+or 
+```
+python3 functional_tests.py
+```
