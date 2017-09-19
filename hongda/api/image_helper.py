@@ -1,6 +1,7 @@
 import numpy as np
+import cv2
 
-__all__ = ['shape_to_np', 'rect_to_bounding_box', 'sub_image']
+__all__ = ['shape_to_np', 'rect_to_bounding_box', 'sub_image', 'add_paster']
 
 def shape_to_np(shape, dtype="int"):
     coords = np.zeros((68, 2), dtype=dtype)
@@ -51,3 +52,29 @@ def sub_area(img, x, y, w, h):
     crop_end_y = crop_y + h
     print(x, y, w, h)
     return (x, y, w, h, crop_x, crop_y, crop_end_x, crop_end_y)
+
+
+def add_paster(img, paster, center_x, center_y, paste_to_width, paste_to_height):
+    if paste_to_height == None:
+        paste_to_height = int((paster.shape[0] / paster.shape[1]) * paste_to_width)
+    paster = cv2.resize(paster, (paste_to_width, paste_to_height), interpolation=cv2.INTER_AREA)
+    start_x = int(center_x - paste_to_width / 2)
+    start_y = int(center_y - paste_to_height / 2)
+
+    clip = sub_area(img, start_x, start_y, paste_to_width, paste_to_height)
+
+    _, paster_mask = cv2.threshold(
+        cv2.cvtColor(paster, cv2.COLOR_BGR2GRAY), 200, 255, cv2.THRESH_BINARY_INV)
+    paster = paster[clip[5]:clip[7], clip[4]:clip[6]]
+    paster_mask = paster_mask[clip[5]:clip[7], clip[4]:clip[6]]
+    inv_paster_mask = cv2.bitwise_not(paster_mask)
+    masked_paster = cv2.bitwise_and(paster, paster, mask=paster_mask)
+
+    nose_area = sub_image(img, start_x, start_y, paste_to_width, paste_to_height)
+    masked_nose_area = cv2.bitwise_and(nose_area, nose_area, mask=inv_paster_mask)
+    merged = cv2.add(masked_nose_area, masked_paster)
+
+    img[clip[1]:clip[1] + clip[3],
+    clip[0]:clip[0] + clip[2]] = merged
+
+    return img

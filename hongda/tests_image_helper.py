@@ -49,6 +49,31 @@ class ImageHelperTest(unittest.TestCase):
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
+    def test_paster_effect(self):
+        image_path = os.path.join(dir_path, './tests/xinwen.jpg')
+        paster_path = os.path.join(dir_path, './pasters/moustache.png')
+        pasted_path = os.path.join(dir_path, './tests/paster-xinwen.jpg')
+        img = cv2.imread(image_path)
+        paster = cv2.imread(paster_path)
+
+        add_paster(img, paster, 100, 100, 100, None)
+        cv2.imshow('Test', img)
+
+        print('img dimension = ', img.shape)
+
+        pasted = cv2.imread(pasted_path)
+
+        print('pasted dimension = ', pasted.shape)
+        cv2.imshow('Test1', pasted)
+        cv2.waitKey(0)
+
+        diff = im_diff(pasted, img)
+        print('diff 2 = ', diff)
+
+        self.assertLess(diff, 1)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
 
 if __name__ == '__main__':
     unittest.main(warnings='ignore')
