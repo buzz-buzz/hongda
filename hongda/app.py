@@ -1,7 +1,7 @@
 from bottle import route, run, get, post, request
 from api.video import burn
 from api.subtitle2 import generate_vtt
-from api.beautify import recipe_cartoonize, recipe_paster, recipe_paster_nose, recipe_paster_nose_2
+from api.beautify import  paste_video
 
 import os.path
 
@@ -27,6 +27,10 @@ def burn_subtitle():
 @post('/recognize')
 def recognize():
     video_path = request.json['videoPath']
+    try:
+        recipes = request.json['recipes']
+    except:
+        recipes = ['recipe_nose']
     lock_file = os.path.splitext(video_path)[0] + '.lock'
 
     if os.path.exists(lock_file):
@@ -35,7 +39,7 @@ def recognize():
     with open(lock_file, 'w') as vtt:
         vtt.write('working...')
 
-    recipe_paster_nose_2(video_path)
+    paste_video(video_path, recipes)
     generate_vtt(video_path=video_path, vtt_path=None)
 
     with open(lock_file, 'w') as vtt:
