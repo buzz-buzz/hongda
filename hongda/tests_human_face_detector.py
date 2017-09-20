@@ -41,14 +41,11 @@ class HumanFaceDetectorTest(unittest.TestCase):
         img = cv2.imread(img_path)
         pasted_path = os.path.join(dir_path, 'tests/em-xinwen.jpg')
         paste_face(img, [recipe_sun_glasses, recipe_moustache])
-        cv2.imshow('img', img)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-        # expected = cv2.imread(pasted_path)
+        expected = cv2.imread(pasted_path)
 
-        # diff = im_diff(img, expected)
-        # print('diff === ', diff)
-        # self.assertLess(diff, 1)
+        diff = im_diff(img, expected)
+        print('diff === ', diff)
+        self.assertLess(diff, 1)
 
 if __name__ == '__main__':
     unittest.main(warnings='ignore')

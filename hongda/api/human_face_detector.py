@@ -38,13 +38,14 @@ def paste_face(img, pasters):
         shape = predictor(gray, face_rect)
         shape = shape_to_np(shape)
         (x, y, w, h) = rect_to_bounding_box(face_rect)
-        for paster, landmark_index, ratio in pasters:
-            add_paster(img, paster, int(shape[landmark_index][0] / scale), int(shape[landmark_index][1] / scale),
-                       int(ratio * w / scale), None)
+        for paster, landmark_index, ratio, valign in pasters:
+            center_x = int(shape[landmark_index][0] / scale)
+            center_y = int(shape[landmark_index][1] / scale)
+            add_paster(img, paster, center_x, center_y, int(ratio * w / scale), None, valign)
 
     return img
 
 
-recipe_nose = (nose_paster, 30, 1.25)
-recipe_sun_glasses = (sun_glasses_paster, 27, 1)
-recipe_moustache = (moustache_paster, 51, 0.4)
+recipe_nose = (nose_paster, 30, 1.25, None)
+recipe_sun_glasses = (sun_glasses_paster, 27, 1, None)
+recipe_moustache = (moustache_paster, 51, 0.4, 'bottom')

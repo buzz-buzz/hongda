@@ -3,6 +3,7 @@ import cv2
 
 __all__ = ['shape_to_np', 'rect_to_bounding_box', 'sub_image', 'add_paster']
 
+
 def shape_to_np(shape, dtype="int"):
     coords = np.zeros((68, 2), dtype=dtype)
 
@@ -10,6 +11,7 @@ def shape_to_np(shape, dtype="int"):
         coords[i] = (shape.part(i).x, shape.part(i).y)
 
     return coords
+
 
 def rect_to_bounding_box(rect):
     x = rect.left()
@@ -19,9 +21,11 @@ def rect_to_bounding_box(rect):
 
     return (x, y, w, h)
 
+
 def sub_image(img, x, y, w, h):
     clip = sub_area(img, x, y, w, h)
     return img[clip[1]:clip[1] + clip[3], clip[0]:clip[0] + clip[2]]
+
 
 def sub_area(img, x, y, w, h):
     print('image shape = ', img.shape)
@@ -54,7 +58,7 @@ def sub_area(img, x, y, w, h):
     return (x, y, w, h, crop_x, crop_y, crop_end_x, crop_end_y)
 
 
-def add_paster(img, paster, center_x, center_y, paste_to_width, paste_to_height):
+def add_paster(img, paster, center_x, center_y, paste_to_width, paste_to_height = None, valign = None):
     if paste_to_height == None:
         paste_to_height = int((paster.shape[0] / paster.shape[1]) * paste_to_width)
     paster = cv2.resize(paster, (paste_to_width, paste_to_height), interpolation=cv2.INTER_AREA)
@@ -62,6 +66,9 @@ def add_paster(img, paster, center_x, center_y, paste_to_width, paste_to_height)
     # cv2.circle(img, (center_x, center_y), 10, (0, 255, 255), 2)
     start_x = int(center_x - paste_to_width / 2)
     start_y = int(center_y - paste_to_height / 2)
+
+    if valign == 'bottom':
+        start_y -= int(paste_to_height / 2)
 
     clip = sub_area(img, start_x, start_y, paste_to_width, paste_to_height)
 
