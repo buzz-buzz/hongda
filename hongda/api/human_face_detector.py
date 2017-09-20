@@ -9,7 +9,7 @@ import os
 import dlib
 from api.image_helper import *
 
-__all__ = ['paste_face', 'recipe_nose', 'recipe_sun_glasses', 'recipe_moustache']
+__all__ = ['paste_face']
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -38,7 +38,7 @@ def paste_face(img, pasters):
         shape = predictor(gray, face_rect)
         shape = shape_to_np(shape)
         (x, y, w, h) = rect_to_bounding_box(face_rect)
-        for paster, landmark_index, ratio, valign in pasters:
+        for paster, landmark_index, ratio, valign in [recipes[paster_name] for paster_name in pasters]:
             center_x = int(shape[landmark_index][0] / scale)
             center_y = int(shape[landmark_index][1] / scale)
             add_paster(img, paster, center_x, center_y, int(ratio * w / scale), None, valign)
@@ -49,3 +49,9 @@ def paste_face(img, pasters):
 recipe_nose = (nose_paster, 30, 1.25, None)
 recipe_sun_glasses = (sun_glasses_paster, 27, 1, None)
 recipe_moustache = (moustache_paster, 51, 0.4, 'bottom')
+
+recipes = {
+    'recipe_nose': recipe_nose,
+    'recipe_sun_glasses': recipe_sun_glasses,
+    'recipe_moustache': recipe_moustache
+}

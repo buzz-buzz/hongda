@@ -14,7 +14,7 @@ class HumanFaceDetectorTest(unittest.TestCase):
     def test_add_nose(self):
         img = cv2.imread(img_path)
         nosed_img_path = os.path.join(dir_path, 'tests/n-xinwen.jpg')
-        paste_face(img, [recipe_nose])
+        paste_face(img, ['recipe_nose'])
         expected_nosed_img = cv2.imread(nosed_img_path)
         diff = im_diff(img, expected_nosed_img)
         print('diff = ', diff)
@@ -23,7 +23,7 @@ class HumanFaceDetectorTest(unittest.TestCase):
     def test_add_sun_glasses(self):
         img = cv2.imread(img_path)
         sun_glasses_img_path = os.path.join(dir_path, 'tests/e-xinwen.jpg')
-        paste_face(img, [recipe_sun_glasses])
+        paste_face(img, ['recipe_sun_glasses'])
         expected = cv2.imread(sun_glasses_img_path)
 
         diff = im_diff(img, expected)
@@ -40,7 +40,7 @@ class HumanFaceDetectorTest(unittest.TestCase):
     def test_add_sun_glasses_and_moustache(self):
         img = cv2.imread(img_path)
         pasted_path = os.path.join(dir_path, 'tests/em-xinwen.jpg')
-        paste_face(img, [recipe_sun_glasses, recipe_moustache])
+        paste_face(img, ['recipe_sun_glasses', 'recipe_moustache'])
         expected = cv2.imread(pasted_path)
 
         diff = im_diff(img, expected)
