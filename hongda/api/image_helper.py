@@ -58,6 +58,8 @@ def add_paster(img, paster, center_x, center_y, paste_to_width, paste_to_height)
     if paste_to_height == None:
         paste_to_height = int((paster.shape[0] / paster.shape[1]) * paste_to_width)
     paster = cv2.resize(paster, (paste_to_width, paste_to_height), interpolation=cv2.INTER_AREA)
+    # cv2.rectangle(paster, (0, 0), (paste_to_width, paste_to_height), (0, 255, 0), 2)
+    # cv2.circle(img, (center_x, center_y), 10, (0, 255, 255), 2)
     start_x = int(center_x - paste_to_width / 2)
     start_y = int(center_y - paste_to_height / 2)
 

@@ -9,18 +9,21 @@ import os
 import dlib
 from api.image_helper import *
 
-__all__ = ['paste_face', 'recipe_nose', 'recipe_sun_glasses']
+__all__ = ['paste_face', 'recipe_nose', 'recipe_sun_glasses', 'recipe_moustache']
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
-nose_img_file = os.path.join(os.getcwd(), 'hongda/pasters/nose.jpg')
+nose_img_file = os.path.realpath(os.path.join(dir_path, '../pasters/nose.jpg'))
 nose_paster = cv2.imread(nose_img_file)
 
 sun_glasses_file = os.path.realpath(os.path.join(dir_path, '../pasters/sunglasses.jpg'))
 sun_glasses_paster = cv2.imread(sun_glasses_file)
 
+moustache_file = os.path.realpath(os.path.join(dir_path, '../pasters/moustache.png'))
+moustache_paster = cv2.imread(moustache_file)
+
 face_detector = dlib.get_frontal_face_detector()
-landmark_file_path = os.path.join(os.getcwd(), 'hongda/data/shape_predictor_68_face_landmarks.dat')
+landmark_file_path = os.path.realpath(os.path.join(dir_path, '../data/shape_predictor_68_face_landmarks.dat'))
 predictor = dlib.shape_predictor(landmark_file_path)
 
 
@@ -44,3 +47,4 @@ def paste_face(img, pasters):
 
 recipe_nose = (nose_paster, 30, 1.25)
 recipe_sun_glasses = (sun_glasses_paster, 27, 1)
+recipe_moustache = (moustache_paster, 51, 0.4)
