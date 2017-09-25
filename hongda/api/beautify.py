@@ -65,19 +65,27 @@ def cartoonize(img, ds_factor=2, sketch_mode=False):
     dst = cv2.bitwise_and(img_output, img_output, mask=mask)
     return dst
 
-def paste_video(video_path, recipes=['recipe_nose']):
+def log_to_file(file, msg):
+    with open(file, 'a') as f:
+        f.write(msg + '\n')
+
+def paste_video(video_path, lock_file, recipes=['recipe_nose']):
     parsed = os.path.split(video_path)
     pastered = os.path.join(
         parsed[0],
         'n-' + os.path.splitext(parsed[1])[0] + '.mp4'
     )
 
+    log_to_file(lock_file, 'compressing...')
     d = compress_dimension_with_rotation_handled(video_path)
+    log_to_file(lock_file, 'paster effects...')
     clip = VideoFileClip(video_path, target_resolution=d)
     paster_recipes = generate_paster(recipes)
     clip_processed = clip.fl_image(paster_recipes)
+    log_to_file(lock_file, 'saving...')
     clip_processed.write_videofile(pastered)
     convert_mp4_to_mov(pastered)
+    log_to_file(lock_file, 'done with paste_VIDEO')
 
 def generate_paster(recipes):
     return lambda img: paste_face(img, recipes)

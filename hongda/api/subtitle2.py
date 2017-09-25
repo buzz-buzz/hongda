@@ -26,7 +26,11 @@ def recognize(video_path):
         return 'Could not understand'
 
 
-def generate_vtt(video_path, vtt_path):
+def log_to_file(file, msg):
+    with open(file, 'a') as f:
+        f.write(msg + '\n')
+
+def generate_vtt(video_path, vtt_path, lock_file):
     if vtt_path is None:
         vtt_path = os.path.splitext(video_path)[0] + '.vtt'
     result = recognize(video_path)
@@ -39,11 +43,13 @@ def generate_vtt(video_path, vtt_path):
     with open(vtt_path, 'w') as vtt:
         vtt.write(template)
 
+    log_to_file(lock_file, 'comparing vtt...')
     compare_vtt(video_path)
 
     score_path = os.path.splitext(video_path)[0] + '.score'
     with open(score_path, 'w') as score:
         score.write(str(compare_vtt(video_path)))
+    log_to_file(lock_file, 'done with generate vtt')
 
 def compare_vtt(video_path):
     parsed = os.path.splitext(video_path)

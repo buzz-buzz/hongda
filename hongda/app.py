@@ -1,9 +1,11 @@
 from bottle import route, run, get, post, request
 from api.video import burn
 from api.subtitle2 import generate_vtt
-from api.beautify import  paste_video
+from api.beautify import paste_video
+from api.task_runner import *
 
 import os.path
+
 
 @route('/hello')
 def hello():
@@ -36,16 +38,17 @@ def recognize():
     if os.path.exists(lock_file):
         return open(lock_file, 'r').read()
 
-    with open(lock_file, 'w') as vtt:
-        vtt.write('working...')
+    with open(lock_file, 'w') as f:
+        f.write('working...')
 
-    paste_video(video_path, recipes)
-    generate_vtt(video_path=video_path, vtt_path=None)
+    parallel_run([paste_video, generate_vtt], [(video_path, lock_file, recipes), (video_path, None, lock_file)])
 
-    with open(lock_file, 'w') as vtt:
-        vtt.write('done')
+    os.rename(lock_file, lock_file + '.log')
+    with open(lock_file, 'w') as f:
+        f.write('done')
 
     return open(lock_file, 'r').read()
+
 
 if __name__ == '__main__':
     run(host='0.0.0.0', port=10126, debug=True)
