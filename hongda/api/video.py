@@ -60,6 +60,15 @@ def convert_mov_to_mp4(videoPath):
 
     return videoPath
 
+def convert_webm_to_mp4(video_path):
+    print("converting ", video_path)
+    file, ext = os.path.splitext(video_path)
+    mp4 = file + "_cvt.mp4"
+    if not os.path.isfile(mp4):
+        call(["ffmpeg", "-fflags", "+genpts", "-i", video_path, "-r", "24", mp4])
+
+    return mp4
+
 
 def convert_mp4_to_mov(videoPath):
     file, ext = os.path.splitext(videoPath)

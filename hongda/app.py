@@ -1,5 +1,5 @@
 from bottle import route, run, get, post, request
-from api.video import burn
+from api.video import burn, convert_webm_to_mp4
 from api.subtitle2 import generate_vtt
 from api.beautify import paste_video
 from api.task_runner import *
@@ -48,6 +48,11 @@ def recognize():
         f.write('done')
 
     return open(lock_file, 'r').read()
+
+@route("/video_convert_webm_to_mp4")
+def video_convert_webm_to_mp4():
+    video_path = request.query.decode()['video_path']
+    return convert_webm_to_mp4(video_path)
 
 
 if __name__ == '__main__':
